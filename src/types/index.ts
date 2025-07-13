@@ -1,6 +1,5 @@
 // Core types for Claudia Code Review application
 
-// Slack integration types
 export interface SlackPost {
   id: string;
   messageId: string;
@@ -10,8 +9,10 @@ export interface SlackPost {
   authorName: string;
   content: string;
   timestamp: string;
-  reactions: SlackReaction[];
   hasReminderReaction: boolean;
+  reactions?: SlackReaction[];
+  prUrl?: string;
+  prTitle?: string;
 }
 
 export interface SlackReaction {
@@ -20,21 +21,6 @@ export interface SlackReaction {
   users: string[];
 }
 
-export interface SlackChannel {
-  id: string;
-  name: string;
-  isPrivate: boolean;
-  memberCount: number;
-}
-
-export interface SlackUser {
-  id: string;
-  name: string;
-  displayName: string;
-  avatarUrl?: string;
-}
-
-// Review task types
 export interface ReviewTask {
   id: number;
   slackPostId: string;
@@ -44,60 +30,39 @@ export interface ReviewTask {
   postContent: string;
   prUrl?: string;
   prTitle?: string;
-  prNumber?: number;
-  repositoryOwner?: string;
-  repositoryName?: string;
   isSelectedForReview: boolean;
   reviewStatus: ReviewStatus;
   tmuxSessionId?: string;
-  processId?: number;
   createdAt: string;
   updatedAt: string;
-  startedAt?: string;
   completedAt?: string;
-  errorMessage?: string;
 }
 
-export type ReviewStatus = 
-  | 'pending'
-  | 'running'
-  | 'completed'
-  | 'failed'
-  | 'cancelled';
+export type ReviewStatus = 'pending' | 'running' | 'completed' | 'failed' | 'cancelled';
 
-// tmux session management types
-export interface TmuxSession {
+export interface ReviewSession {
   id: string;
   sessionName: string;
   taskId: number;
   prUrl: string;
-  status: TmuxSessionStatus;
+  status: ReviewStatus;
   startedAt: string;
   completedAt?: string;
   output?: string;
-  errorOutput?: string;
+  errorMessage?: string;
 }
 
-export type TmuxSessionStatus = 
-  | 'starting'
-  | 'running'
-  | 'completed'
-  | 'failed'
-  | 'killed';
-
-// Application settings types
 export interface AppSettings {
   slack: SlackSettings;
   claudeCode: ClaudeCodeSettings;
-  ui: UISettings;
+  reminder: ReminderSettings;
 }
 
 export interface SlackSettings {
-  botToken?: string;
+  token?: string;
   workspaceId?: string;
-  reminderReactions: string[];
-  channelIds: string[];
   userId?: string;
+  channels: string[];
 }
 
 export interface ClaudeCodeSettings {
@@ -105,119 +70,112 @@ export interface ClaudeCodeSettings {
   customCommand: string;
   maxParallelSessions: number;
   timeoutMinutes: number;
-  workingDirectory?: string;
 }
 
-export interface UISettings {
-  theme: 'light' | 'dark';
-  refreshInterval: number;
-  showNotifications: boolean;
-  autoRefresh: boolean;
+export interface ReminderSettings {
+  enabledReactions: string[];
+  autoRefreshInterval: number;
+  notificationsEnabled: boolean;
 }
 
-// API response types
+export interface TaskStatusUpdate {
+  taskId: number;
+  newStatus: ReviewStatus;
+  sessionId?: string;
+  output?: string;
+  errorMessage?: string;
+}
+
+export interface GitHubPR {
+  url: string;
+  number: number;
+  title: string;
+  owner: string;
+  repo: string;
+  author: string;
+  branch: string;
+  baseBranch: string;
+  state: 'open' | 'closed' | 'merged';
+}
+
+// API Response types
 export interface ApiResponse<T> {
   success: boolean;
   data?: T;
   error?: string;
-  message?: string;
 }
 
-export interface PaginatedResponse<T> {
-  items: T[];
-  total: number;
-  page: number;
-  pageSize: number;
-  hasNext: boolean;
-  hasPrev: boolean;
+export interface SlackApiResponse {
+  ok: boolean;
+  messages?: SlackMessage[];
+  error?: string;
 }
 
-// GitHub integration types (for future use)
-export interface GitHubPR {
-  number: number;
-  title: string;
-  description: string;
-  author: string;
-  createdAt: string;
-  updatedAt: string;
-  url: string;
-  filesUrl: string;
-  repository: GitHubRepository;
-  status: 'open' | 'closed' | 'merged';
+export interface SlackMessage {
+  type: string;
+  ts: string;
+  user: string;
+  text: string;
+  reactions?: SlackReaction[];
+  thread_ts?: string;
 }
 
-export interface GitHubRepository {
-  owner: string;
-  name: string;
-  fullName: string;
-  url: string;
-  isPrivate: boolean;
+// UI Component Props types
+export interface StatusBadgeProps {
+  status: ReviewStatus;
+  className?: string;
 }
 
-// Error types
-export interface AppError {
-  code: string;
-  message: string;
-  details?: string;
-  timestamp: string;
+export interface TaskCardProps {
+  task: ReviewTask;
+  onStartReview: (taskId: number) => void;
+  onViewResult: (taskId: number) => void;
+  onCancelReview: (taskId: number) => void;
 }
 
-// Component prop types
-export interface TaskListProps {
-  tasks: ReviewTask[];
-  onStartReview: (taskId: number) => Promise<void>;
-  onCancelReview: (taskId: number) => Promise<void>;
-  onRefresh: () => Promise<void>;
+export interface ReviewOutputProps {
+  output: string;
   isLoading: boolean;
+  error?: string;
 }
 
-export interface SlackPostListProps {
+// Store types (Zustand)
+export interface SlackStore {
   posts: SlackPost[];
-  onToggleSelection: (postId: string, selected: boolean) => Promise<void>;
-  onCreateTask: (postId: string) => Promise<void>;
-  onRefresh: () => Promise<void>;
   isLoading: boolean;
+  error: string | null;
+  fetchPosts: () => Promise<void>;
+  refreshPosts: () => Promise<void>;
+  toggleReminderSelection: (postId: string) => Promise<void>;
 }
 
-export interface SettingsProps {
+export interface TaskStore {
+  tasks: ReviewTask[];
+  isLoading: boolean;
+  error: string | null;
+  fetchTasks: () => Promise<void>;
+  createTaskFromPost: (post: SlackPost) => Promise<void>;
+  updateTaskStatus: (taskId: number, status: ReviewStatus) => void;
+  deleteTask: (taskId: number) => Promise<void>;
+}
+
+export interface ReviewStore {
+  sessions: ReviewSession[];
+  isLoading: boolean;
+  error: string | null;
+  startReview: (taskId: number) => Promise<string>;
+  getSessionStatus: (sessionId: string) => Promise<ReviewStatus>;
+  getSessionOutput: (sessionId: string) => Promise<string>;
+  cancelSession: (sessionId: string) => Promise<void>;
+  refreshSessions: () => Promise<void>;
+}
+
+export interface SettingsStore {
   settings: AppSettings;
-  onSave: (settings: AppSettings) => Promise<void>;
-  onTestSlackConnection: () => Promise<boolean>;
-  onTestClaudeCode: () => Promise<boolean>;
   isLoading: boolean;
+  error: string | null;
+  loadSettings: () => Promise<void>;
+  saveSettings: (settings: Partial<AppSettings>) => Promise<void>;
+  testSlackConnection: () => Promise<boolean>;
+  testClaudeCodePath: () => Promise<boolean>;
 }
-
-// Utility types
-export type Nullable<T> = T | null;
-export type Optional<T> = T | undefined;
-export type DeepPartial<T> = {
-  [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P];
-};
-
-// Constants
-export const REVIEW_STATUSES = {
-  PENDING: 'pending' as const,
-  RUNNING: 'running' as const,
-  COMPLETED: 'completed' as const,
-  FAILED: 'failed' as const,
-  CANCELLED: 'cancelled' as const,
-};
-
-export const DEFAULT_SETTINGS: AppSettings = {
-  slack: {
-    reminderReactions: ['alarm_clock', 'memo', 'eyes'],
-    channelIds: [],
-  },
-  claudeCode: {
-    executablePath: 'claude',
-    customCommand: '/pwe-review',
-    maxParallelSessions: 5,
-    timeoutMinutes: 30,
-  },
-  ui: {
-    theme: 'light',
-    refreshInterval: 30000, // 30 seconds
-    showNotifications: true,
-    autoRefresh: true,
-  },
-};

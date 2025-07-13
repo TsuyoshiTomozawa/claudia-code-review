@@ -1,16 +1,14 @@
 @import 'tailwindcss';
 
 /* Custom styles for Claudia Code Review */
-
 :root {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
-  color-scheme: light;
-  color: rgba(17, 24, 39, 0.87);
-  background-color: #f9fafb;
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -19,64 +17,42 @@
   -webkit-text-size-adjust: 100%;
 }
 
-* {
-  box-sizing: border-box;
+a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
+}
+a:hover {
+  color: #535bf2;
 }
 
 body {
   margin: 0;
-  padding: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
   min-height: 100vh;
 }
 
 #root {
-  min-height: 100vh;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0;
+  width: 100%;
+  height: 100vh;
 }
 
-/* Custom scrollbar for webkit browsers */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: #f1f5f9;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
-}
-
-/* Focus styles for accessibility */
-.focus\:ring-blue-500:focus {
-  --tw-ring-opacity: 1;
-  --tw-ring-color: rgb(59 130 246 / var(--tw-ring-opacity));
-}
-
-/* Animation for status indicators */
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
   }
-  50% {
-    opacity: .5;
+  a:hover {
+    color: #747bff;
   }
 }
 
-.animate-pulse {
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-/* Custom styles for task status badges */
-.status-badge {
-  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
-}
-
+/* Status indicator styles */
 .status-pending {
   @apply bg-gray-100 text-gray-800;
 }
@@ -93,69 +69,40 @@ body {
   @apply bg-red-100 text-red-800;
 }
 
-/* Hover effects for interactive elements */
-.hover-lift {
-  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+/* Animation for status updates */
+.status-indicator {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium transition-colors duration-200;
 }
 
-.hover-lift:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+/* Code review result styling */
+.review-output {
+  @apply bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-auto max-h-96;
 }
 
 /* Loading spinner */
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+.spinner {
+  @apply animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600;
 }
 
-.animate-spin {
-  animation: spin 1s linear infinite;
+/* Custom scrollbar */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(156 163 175) transparent;
 }
 
-/* Code block styling */
-code {
-  @apply bg-gray-100 text-gray-800 px-1 py-0.5 rounded text-sm font-mono;
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
 }
 
-pre {
-  @apply bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto text-sm;
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
 }
 
-pre code {
-  @apply bg-transparent text-gray-100 p-0;
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgb(156 163 175);
+  border-radius: 3px;
 }
 
-/* Toast notification styles */
-.toast {
-  @apply fixed top-4 right-4 z-50 bg-white rounded-lg shadow-lg border border-gray-200 p-4 max-w-sm;
-  animation: slideIn 0.3s ease-out;
-}
-
-@keyframes slideIn {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-.toast-success {
-  @apply border-green-200 bg-green-50;
-}
-
-.toast-error {
-  @apply border-red-200 bg-red-50;
-}
-
-.toast-warning {
-  @apply border-yellow-200 bg-yellow-50;
-}
-
-.toast-info {
-  @apply border-blue-200 bg-blue-50;
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: rgb(107 114 128);
 }
